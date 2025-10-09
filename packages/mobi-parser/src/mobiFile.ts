@@ -204,7 +204,7 @@ export class MobiFile {
     }
     const { titleOffset, titleLength, localeLanguage, localeRegion } = mobi
     // extend mobiHeader through mobi property, title and language
-    const lang = mobiLang[localeLanguage.toString()]
+    const lang = mobiLang[localeLanguage.toString()] ?? []
     const mobiHeaderExtends: MobiHeaderExtends = {
       title: getString(firstRecord.slice(titleOffset, titleOffset + titleLength)),
       language: lang[localeRegion >> 2] ?? lang[0] ?? 'unknown',
