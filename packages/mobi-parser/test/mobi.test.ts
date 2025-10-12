@@ -160,15 +160,14 @@ describe('init mobi in browser', () => {
   })
 })
 
-describe('sway.mobi', () => {
-  let mobi: Mobi
+describe('mobi corner case', () => {
   beforeAll(async () => {
     // @ts-expect-error globalThis.__BROWSER__
     globalThis.__BROWSER__ = false
-    mobi = await initMobiFile('./example/sway.mobi')
   })
 
-  it('replace a tag href', () => {
+  it('replace a tag href (sway.mobi)', async () => {
+    const mobi = await initMobiFile('./example/sway.mobi')
     const spine = mobi.getSpine()
     // src match with `fileposReg`
     const chapter = mobi.loadChapter(spine[0].id)
@@ -178,5 +177,13 @@ describe('sway.mobi', () => {
     const chapter1 = mobi.loadChapter(spine[1].id)
     const aHref = chapter1?.html.match(/href="([^"]*)"/i)![1]
     expect(aHref?.startsWith('filepos')).toBe(true)
+  })
+
+  it('unexisting mobiLang (mobiLang.mobi)', async () => {
+    const mobi = await initMobiFile('./example/mobiLang.mobi')
+    const metadata = mobi.getMetadata()
+    // mobiLang.mobi dosn't provide the correct language in the exth and file headers
+    //  so we don't need to worry about what the language is.
+    expect(metadata.language).toBe('und')
   })
 })
