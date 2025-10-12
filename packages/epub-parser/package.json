@@ -1,7 +1,7 @@
 {
   "name": "@lingo-reader/epub-parser",
   "type": "module",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "An epub parser which can extract chapter contents from an epub file",
   "author": "hhk-png <fangfangluo3@qq.com>",
   "license": "MIT",

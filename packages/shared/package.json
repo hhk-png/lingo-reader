@@ -1,7 +1,7 @@
 {
   "name": "@lingo-reader/shared",
   "type": "module",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "shared module of svg ebook reader",
   "author": "hhk-png <fangluoabc@163.com>",
   "license": "MIT",
