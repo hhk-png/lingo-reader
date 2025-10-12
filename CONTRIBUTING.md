@@ -19,6 +19,11 @@ graph TD
   shared --> mobi-parser
   svg-render([svg-render])
 ```
+- `shared` contains some shared utils used by `epub-parser`, `fb2-parser` and `mobi-parser`. Including xml2js-parser, path, etc.
+- `epub-parser` is the parser of epub file.
+- `fb2-parser` is the parser of fb2 file.
+- `mobi-parser` is the parser of mobi and azw3(kf8) files.
+- `svg-render` is a failed technical attempt to use SVG to render e-book pages. Please ignore it.
 
 ### Testing
 
