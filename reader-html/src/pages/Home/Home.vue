@@ -11,7 +11,7 @@ const localeStore = useLocaleStore()
 /**
  * i18n
  */
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 /**
  * switch language
@@ -39,8 +39,28 @@ function selectLanguage(item: string) {
  * select file
  */
 async function processFile(file: File) {
-  await bookStore.initBook(file)
-  router.push('/book')
+  try {
+    await bookStore.initBook(file)
+    router.push('/book')
+  }
+  catch (err: any) {
+    const fileName = encodeURIComponent(file.name)
+    const errorMessage = encodeURIComponent(err.message)
+    const issueTitle = encodeURIComponent(`Parse ${fileName} failed: ${errorMessage}`)
+    const issueBody = encodeURIComponent(t('issueBody'))
+    const urlToJump = encodeURIComponent(`https://github.com/hhk-png/lingo-reader/issues/new?title=${issueTitle}&body=${issueBody}`)
+    const confirmMessage = t('errorMessageToUpload', {
+      fileName,
+      errorMessage,
+      urlToJump,
+      issueTitle,
+    })
+    // eslint-disable-next-line no-alert
+    const isOpen = confirm(confirmMessage)
+    if (isOpen) {
+      window.open(urlToJump, '_blank')
+    }
+  }
 }
 </script>
 

@@ -77,6 +77,7 @@ function handleDrop(e: DragEvent) {
       {{ t('supportedFileTypsPrefix') }}
       <b>.epub</b> <b>.mobi</b> <b>.azw3(.kf8)</b> <b>.fb2</b>
       {{ t('supportedFileTypsSuffix') }}
+      <a class="error-feedback" href="https://github.com/hhk-png/lingo-reader/issues/new" target="_blank">{{ t('errorFeedback') }}</a>
     </span>
   </div>
 </template>
@@ -138,5 +139,9 @@ function handleDrop(e: DragEvent) {
   font-size: 12px;
   color: #aaa;
   pointer-events: none;
+}
+
+.error-feedback {
+  pointer-events: auto;
 }
 </style>
