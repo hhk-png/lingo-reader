@@ -49,7 +49,7 @@ export class ZipFile {
             })
         }
         reader.readAsArrayBuffer(file as File)
-        reader.onerror = reject
+        reader.onerror = () => reject(reader.error)
       }
       else {
         const fileToLoad: Uint8Array = typeof file === 'string'
