@@ -1,7 +1,7 @@
 {
   "name": "@lingo-reader/fb2-parser",
   "type": "module",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "An fb2 parser which can extract chapter contents from an fb2 file",
   "author": "hhk-png <fangfangluo3@qq.com>",
   "license": "MIT",
