@@ -189,6 +189,24 @@ k=
     }).toThrowError('The <binary> element must have `id` and `content-type` attributes.')
   })
 
+  it('not throw when there is no <binary>', async () => {
+    const binaryWithoutId = `<?xml version="1.0" encoding="UTF-8"?>
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <body>
+    some text
+  </body>
+</FictionBook>`
+    const binaryAST = await parsexml(binaryWithoutId, {
+      charsAsChildren: true,
+      preserveChildrenOrder: true,
+      explicitChildren: true,
+      childkey: 'children',
+    })
+    expect(() => {
+      parseBinary(binaryAST.FictionBook.binary)
+    }).not.toThrowError()
+  })
+
   it('coverImageId should be `` if it was not exist', async () => {
     const withoutCoverFilePath = fileURLToPath(new URL('./fixture/cover.fb2', import.meta.url).href)
     const fb2 = await initFb2File(withoutCoverFilePath)

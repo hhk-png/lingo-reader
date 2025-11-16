@@ -264,11 +264,6 @@ export class EpubFile implements EBookParser {
     // .ncx file
     if (tocPath.length > 0) {
       const tocDir = path.dirname(tocPath)
-      // href to id
-      // const hrefToIdMap: Record<string, string> = {}
-      // for (const item of this.spine) {
-      //   hrefToIdMap[item.href] = item.id
-      // }
       const tocNcxFile = await this.zip.readFile(tocPath)
       const ncx = (await parsexml(tocNcxFile)).ncx
       // navMap

@@ -13,7 +13,7 @@ import { extend, getFirstXmlNodeText } from './utils'
 // <binary id="_" content-type>...<binary>
 export function parseBinary(binaryAST: any): Fb2ResourceMap {
   const resourceMap: Fb2ResourceMap = new Map()
-  for (const binary of binaryAST) {
+  for (const binary of binaryAST ?? []) {
     const $ = binary.$
     const id = $.id
     const contentType = $['content-type']
