@@ -29,7 +29,7 @@
     "@rollup/plugin-replace": "^5.0.5",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/node": "^22.10.2",
-    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/coverage-v8": "^3.2.4",
     "bumpp": "^10.0.1",
     "eslint": "^9.4.0",
     "lint-staged": "^15.2.5",
@@ -38,7 +38,7 @@
     "rollup-plugin-esbuild": "^6.1.1",
     "simple-git-hooks": "^2.11.1",
     "typescript": "5.7.3",
-    "vitest": "^2.1.8"
+    "vitest": "^3.2.4"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm lint-staged"
