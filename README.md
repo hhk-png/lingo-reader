@@ -10,6 +10,10 @@ In addition, you can also visit [https://hhk-png.github.io/lingo-reader/](https:
 
 You can find detailed explanations of each parsing library in the corresponding subproject's `README.md` file: [epub-parser README.md](./packages/epub-parser/README.md), [mobi-parser README.md](./packages/mobi-parser/README.md), [kf8-parser README.md](./packages/mobi-parser/README.md) and [fb2-parser README.md](./packages/fb2-parser/README.md).
 
+# Contributing Guide
+
+see [https://github.com/hhk-png/lingo-reader?tab=contributing-ov-file](https://github.com/hhk-png/lingo-reader?tab=contributing-ov-file)
+
 # Install
 
 ```shell

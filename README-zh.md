@@ -15,6 +15,10 @@ pnpm install @lingo-reader/fb2-parser
 pnpm install @lingo-reader/shared # 包含统一API的类型
 ```
 
+# Contributing Guide
+
+see [https://github.com/hhk-png/lingo-reader?tab=contributing-ov-file](https://github.com/hhk-png/lingo-reader?tab=contributing-ov-file)
+
 # Usage in Browser
 
 ```typescript
