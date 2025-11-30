@@ -1,7 +1,7 @@
 {
   "name": "@lingo-reader/svg-render",
   "type": "module",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "private": true,
   "description": "render text to svg",
   "author": "hhk-png <fangluoabc@163.com>",
