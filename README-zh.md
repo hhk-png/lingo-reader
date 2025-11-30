@@ -19,6 +19,8 @@ pnpm install @lingo-reader/shared # 包含统一API的类型
 
 see [https://github.com/hhk-png/lingo-reader?tab=contributing-ov-file](https://github.com/hhk-png/lingo-reader?tab=contributing-ov-file)
 
+ 在提交 Pull Request 之前，请务必阅读此内容，并在提交信息的开头添加提交类型前缀。
+
 # Usage in Browser
 
 ```typescript

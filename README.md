@@ -14,6 +14,8 @@ You can find detailed explanations of each parsing library in the corresponding 
 
 see [https://github.com/hhk-png/lingo-reader?tab=contributing-ov-file](https://github.com/hhk-png/lingo-reader?tab=contributing-ov-file)
 
+Please make sure to read this before submitting a pull request, and add a commit type prefix at the beginning of your commit message.
+
 # Install
 
 ```shell
