@@ -236,6 +236,16 @@ k=
       }))
     }).rejects.toThrowError('The `fb2` param cannot be a `File` in node env.')
   })
+
+  it('test', async () => {
+    const withoutCoverFilePath = fileURLToPath(new URL('./fixture/cover.fb2', import.meta.url).href)
+    const fb2 = await initFb2File(withoutCoverFilePath)
+    const html = fb2.loadChapter(fb2.getSpine()[0].id)!.html
+    const charBeforeEm = html[html.indexOf('<em>') - 1]
+    expect(charBeforeEm).toBe(' ')
+    const charAfterCloseEm = html[html.indexOf('</em>') + 5]
+    expect(charAfterCloseEm).toBe(' ')
+  })
 })
 
 describe('initFb2File in browser', () => {

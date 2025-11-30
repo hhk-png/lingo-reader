@@ -205,7 +205,7 @@ export class Fb2File implements EBookParser {
     const res: string[] = []
     for (const node of sectionNode.children) {
       if (node['#name'] === '__text__') {
-        res.push(node._.trim())
+        res.push(node._.replace(/^\s+|\s+$/g, ' '))
       }
       else {
         const { tag, isSelfClosing } = transformTagName(node['#name'])
