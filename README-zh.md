@@ -207,7 +207,6 @@ export interface ResolvedHref {
 # TODO：
 
 1. 处理epub-parser保存文件的问题，
-2. 将svg-renderer分离出来，抽代码
 3. 看epub 3.4规范
 4. 阅读进度
 5. media-overlay语音朗读功能

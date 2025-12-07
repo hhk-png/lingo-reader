@@ -22,8 +22,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - uses: pnpm/action-setup@v4
       - run: pnpm install
-      - run: pnpm exec playwright install
-        working-directory: packages/svg-render
       - run: pnpm run build
       - run: pnpm run test
       - run: npx changelogithub

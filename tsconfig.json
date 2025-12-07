@@ -8,7 +8,6 @@
     "moduleResolution": "Node",
     "paths": {
       "@lingo-reader/epub-parser/*": ["packages/epub-parser/src/*"],
-      "@lingo-reader/svg-render/*": ["packages/svg-render/src/*"],
       "@lingo-reader/shared/*": ["packages/shared/src/*"]
     },
     "resolveJsonModule": true,
