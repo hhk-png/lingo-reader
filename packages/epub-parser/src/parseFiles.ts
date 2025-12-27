@@ -609,24 +609,52 @@ function parseEncryptedDatas(
   return fileToProcessors
 }
 
+// Font obfuscation algorithms - these are NOT encryption and don't require keys
+const FONT_OBFUSCATION_ALGORITHMS = [
+  'http://www.idpf.org/2008/embedding', // IDPF standard
+  'http://ns.adobe.com/pdf/enc#RC', // Adobe algorithm
+]
+
+function isFontObfuscation(encryptedData: any): boolean {
+  const algorithm = encryptedData.EncryptionMethod?.[0]?.$?.Algorithm
+  return FONT_OBFUSCATION_ALGORITHMS.includes(algorithm)
+}
+
 export async function parseEncryption(
   encryptionAST: any,
   options: EncryptionKeys,
 ): Promise<PathToProcessors> {
   const encryption = encryptionAST.encryption
   const encryptedKeys = encryption.EncryptedKey
-  const encryptedDatas = encryption.EncryptedData
+  let encryptedDatas = encryption.EncryptedData
+
+  // Filter out font obfuscation entries - these don't require decryption keys
+  if (encryptedDatas) {
+    encryptedDatas = encryptedDatas.filter(
+      (data: any) => !isFontObfuscation(data),
+    )
+    if (encryptedDatas.length === 0) {
+      encryptedDatas = undefined
+    }
+  }
 
   if (encryptedKeys && !options.rsaPrivateKey) {
     throw new Error('Please provide the RSA private key to decrypt the encrypted AES keys. ')
   }
 
   if (!encryptedKeys && encryptedDatas && !options.aesSymmetricKey) {
-    throw new Error('The file is only enctypted with AES, but no symmetric key is provided. ')
+    throw new Error('The file is encrypted with AES, but no symmetric key is provided. ')
+  }
+
+  // If no encryption entries remain after filtering, return empty processors
+  if (!encryptedDatas && !encryptedKeys) {
+    return {}
   }
 
   const idToKeyMap = await parseEncryptedKeys(encryptedKeys, options.rsaPrivateKey!)
-  const pathToProcessors = parseEncryptedDatas(encryptedDatas, idToKeyMap, options.aesSymmetricKey!)
+  const pathToProcessors = encryptedDatas
+    ? parseEncryptedDatas(encryptedDatas, idToKeyMap, options.aesSymmetricKey!)
+    : {}
 
   return pathToProcessors
 }
