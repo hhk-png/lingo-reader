@@ -209,56 +209,56 @@ export class EpubFile implements EBookParser {
     const rootFile = xml.package
 
     let tocPath = ''
-    for (const key in rootFile) {
-      switch (key) {
-        case 'metadata': {
-          this.metadata = parseMetadata(rootFile[key][0])
-          break
-        }
-        case 'manifest': {
-          // href will pad with 'epub:' except for manifest item
-          //  we should use resolveHref to get the real href
-          this.manifest = parseManifest(rootFile[key][0], this.opfDir)
-          // save element if it is a resource, such as image, css
-          // which was determined by media-type
-          for (const key in this.manifest) {
-            const manifestItem = this.manifest[key]
+    // metadata
+    if (rootFile.metadata) {
+      this.metadata = parseMetadata(rootFile.metadata[0])
+    }
 
-            this.hrefToIdMap[manifestItem.href] = manifestItem.id
+    // manifest
+    if (rootFile.manifest) {
+      // href will pad with 'epub:' except for manifest item
+      //  we should use resolveHref to get the real href
+      this.manifest = parseManifest(rootFile.manifest[0], this.opfDir)
+      // save element if it is a resource, such as image, css
+      // which was determined by media-type
+      for (const key in this.manifest) {
+        const manifestItem = this.manifest[key]
 
-            // css and image|font|audio|video
-            if (
-              savedResourceMediaTypePrefixes.has(manifestItem.mediaType)
-              // exclude html and xhtml...
-              || manifestItem.mediaType.startsWith('text/css')
-            ) {
-              const fileName: string = manifestItem.href.replace(/\//g, '_')
-              const filePath = path.resolve(this.resourceSaveDir, fileName)
-              this.savedResourcePath.push(filePath)
-              writeFileSync(
-                filePath,
-                await this.zip.readResource(manifestItem.href),
-              )
-            }
-          }
-          break
-        }
-        case 'spine': {
-          const res = parseSpine(rootFile[key][0], this.manifest)
-          // .ncx file path
-          tocPath = res.tocPath
-          this.spine = res.spine
-          break
-        }
-        case 'guide': {
-          this.guide = parseGuide(rootFile[key][0], this.opfDir)
-          break
-        }
-        case 'collection': {
-          this.collections = parseCollection(rootFile[key], this.opfDir)
-          break
+        this.hrefToIdMap[manifestItem.href] = manifestItem.id
+
+        // css and image|font|audio|video
+        if (
+          savedResourceMediaTypePrefixes.has(manifestItem.mediaType)
+          // exclude html and xhtml...
+          || manifestItem.mediaType.startsWith('text/css')
+        ) {
+          const fileName: string = manifestItem.href.replace(/\//g, '_')
+          const filePath = path.resolve(this.resourceSaveDir, fileName)
+          this.savedResourcePath.push(filePath)
+          writeFileSync(
+            filePath,
+            await this.zip.readResource(manifestItem.href),
+          )
         }
       }
+    }
+
+    // spine
+    if (rootFile.spine) {
+      const res = parseSpine(rootFile.spine[0], this.manifest)
+      // .ncx file path
+      tocPath = res.tocPath
+      this.spine = res.spine
+    }
+
+    // guide
+    if (rootFile.guide) {
+      this.guide = parseGuide(rootFile.guide[0], this.opfDir)
+    }
+
+    // collection
+    if (rootFile.collection) {
+      this.collections = parseCollection(rootFile.collection, this.opfDir)
     }
 
     // .ncx file

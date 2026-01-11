@@ -530,7 +530,7 @@ describe('parseEncryption', async () => {
 
     await expect(async () => {
       await parseEncryption(enc.enc0[0], {})
-    }).rejects.toThrowError()
+    }).rejects.toThrowError('Please provide the RSA private key to decrypt the encrypted AES keys.')
   })
 
   it('the file encrypted with aes, but no aesKey provided', async () => {
@@ -538,7 +538,7 @@ describe('parseEncryption', async () => {
     enc1.encryption = enc1.encryption[0]
     await expect(async () => {
       await parseEncryption(enc1, {})
-    }).rejects.toThrowError()
+    }).rejects.toThrowError('The file is encrypted with AES, but no symmetric key is provided.')
   })
 
   it('unsupported asymmetric encryption(except for rsa)', async () => {
@@ -548,7 +548,7 @@ describe('parseEncryption', async () => {
       await parseEncryption(enc2, {
         rsaPrivateKey: Buffer.from('private key', 'base64'),
       })
-    }).rejects.toThrowError()
+    }).rejects.toThrowError('Unsupported encryption algorithm: kw-rsa-oaep. Only RSA and AES algorithms are supported.')
   })
 
   it('no symmetric key found for id', async () => {
@@ -558,7 +558,7 @@ describe('parseEncryption', async () => {
       await parseEncryption(enc3, {
         rsaPrivateKey: Buffer.from(RsaPrivateKey, 'base64'),
       })
-    }).rejects.toThrowError()
+    }).rejects.toThrowError('No symmetric key found for id "NOID". Skipping decryption for file "EPUB/xhtml/cover.xhtml"')
   })
 
   it('unsupported encryption symmetric algorithm', async () => {
@@ -569,6 +569,31 @@ describe('parseEncryption', async () => {
       aesSymmetricKey: Buffer.from('symmetric key', 'base64'),
     })
     expect(warnSpy).toBeCalled()
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Unsupported encryption algorithm: kw-aes192-cbc. Only AES and RSA algorithms are supported.',
+    )
     warnSpy.mockRestore()
+  })
+
+  it('lingo-reader doesn\'t support font obfuscation', async () => {
+    const enc5 = enc.enc5[0]
+    enc5.encryption = enc5.encryption[0]
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => { })
+    const res = await parseEncryption(enc5, {})
+    expect(consoleWarn).toBeCalledWith('lingo-reader doesn\'t handle font obfuscation and it doesn\'t read the font file.')
+    expect(res).toEqual({})
+    consoleWarn.mockRestore()
+  })
+
+  it('font obfuscation and normal encrypted data', async () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => { })
+    const enc6 = enc.enc6[0]
+    enc6.encryption = enc6.encryption[0]
+    const res = await parseEncryption(enc6, {
+      aesSymmetricKey: Buffer.from('symmetric key', 'base64'),
+    })
+    expect(consoleWarn).toBeCalledWith('lingo-reader doesn\'t handle font obfuscation and it doesn\'t read the font file.')
+    expect(res['EPUB/xhtml/chapter2.xhtml'].length).toBe(2)
+    consoleWarn.mockRestore()
   })
 })
