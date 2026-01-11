@@ -552,7 +552,7 @@ async function parseEncryptedKeys(
 }
 
 function parseEncryptedDatas(
-  encryptedDatasAST: any[],
+  encryptedDatasAST: any[] = [],
   idToKeyMap: Record<string, Uint8Array>,
   aesSymmetricKey: Uint8Array,
 ): PathToProcessors {
@@ -609,15 +609,15 @@ function parseEncryptedDatas(
   return fileToProcessors
 }
 
-// Font obfuscation algorithms - these are NOT encryption and don't require keys
+// lingo-reader doesn't handle font obfuscation and doesn't read the font file,
 const FONT_OBFUSCATION_ALGORITHMS = [
   'http://www.idpf.org/2008/embedding', // IDPF standard
   'http://ns.adobe.com/pdf/enc#RC', // Adobe algorithm
 ]
 
-function isFontObfuscation(encryptedData: any): boolean {
+function isNotFontObfuscation(encryptedData: any): boolean {
   const algorithm = encryptedData.EncryptionMethod?.[0]?.$?.Algorithm
-  return FONT_OBFUSCATION_ALGORITHMS.includes(algorithm)
+  return !FONT_OBFUSCATION_ALGORITHMS.includes(algorithm)
 }
 
 export async function parseEncryption(
@@ -626,35 +626,27 @@ export async function parseEncryption(
 ): Promise<PathToProcessors> {
   const encryption = encryptionAST.encryption
   const encryptedKeys = encryption.EncryptedKey
-  let encryptedDatas = encryption.EncryptedData
+  const encryptedDatasAll = encryption.EncryptedData ?? []
 
-  // Filter out font obfuscation entries - these don't require decryption keys
-  if (encryptedDatas) {
-    encryptedDatas = encryptedDatas.filter(
-      (data: any) => !isFontObfuscation(data),
-    )
+  // Filter out font obfuscation entries, lingo-reader doesn't handle font obfuscation
+  const encryptedDatas = encryptedDatasAll?.filter(isNotFontObfuscation)
+  if (encryptedDatasAll.length !== encryptedDatas.length) {
+    console.warn('lingo-reader doesn\'t handle font obfuscation and it doesn\'t read the font file.')
     if (encryptedDatas.length === 0) {
-      encryptedDatas = undefined
+      return {}
     }
   }
 
   if (encryptedKeys && !options.rsaPrivateKey) {
-    throw new Error('Please provide the RSA private key to decrypt the encrypted AES keys. ')
+    throw new Error('Please provide the RSA private key to decrypt the encrypted AES keys.')
   }
 
   if (!encryptedKeys && encryptedDatas && !options.aesSymmetricKey) {
     throw new Error('The file is encrypted with AES, but no symmetric key is provided. ')
   }
 
-  // If no encryption entries remain after filtering, return empty processors
-  if (!encryptedDatas && !encryptedKeys) {
-    return {}
-  }
-
   const idToKeyMap = await parseEncryptedKeys(encryptedKeys, options.rsaPrivateKey!)
-  const pathToProcessors = encryptedDatas
-    ? parseEncryptedDatas(encryptedDatas, idToKeyMap, options.aesSymmetricKey!)
-    : {}
+  const pathToProcessors = parseEncryptedDatas(encryptedDatas, idToKeyMap, options.aesSymmetricKey!)
 
   return pathToProcessors
 }
