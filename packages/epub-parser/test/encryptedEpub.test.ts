@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
 import { Buffer } from 'node:buffer'
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it, vi } from 'vitest'
 import { initEpubFile } from '../src'
 import {
   AesSymmetricKey16,
@@ -14,6 +14,7 @@ function isJpg(img: Uint8Array): boolean {
 
 describe('initEpubFile options interface', () => {
   it('not throw error', async () => {
+    const warnSpyOn = vi.spyOn(console, 'warn').mockImplementation(() => { })
     // @ts-expect-error __BROWSER__ is for build process
     globalThis.__BROWSER__ = false
     const epub = await initEpubFile(
@@ -26,10 +27,12 @@ describe('initEpubFile options interface', () => {
     )
     const spine = epub.getSpine()
     expect(spine.length).toBeGreaterThan(0)
+    warnSpyOn.mockRestore()
   })
 })
 
 describe('rsa-sha1+aes-256-cbc-ctr-gcm.epub', async () => {
+  const warnSpyOn = vi.spyOn(console, 'warn').mockImplementation(() => { })
   // @ts-expect-error __BROWSER__ is for build process
   globalThis.__BROWSER__ = false
   const epub = await initEpubFile(
@@ -40,9 +43,9 @@ describe('rsa-sha1+aes-256-cbc-ctr-gcm.epub', async () => {
     },
   )
   const spine = epub.getSpine()
-  // afterAll(() => {
-  //   epub.destroy()
-  // })
+  afterAll(() => {
+    warnSpyOn.mockRestore()
+  })
 
   it('ePUB/xhtml/chapter2.xhtml', async () => {
     const item = spine[2]

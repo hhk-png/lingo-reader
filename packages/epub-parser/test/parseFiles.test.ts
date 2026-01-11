@@ -586,11 +586,14 @@ describe('parseEncryption', async () => {
   })
 
   it('font obfuscation and normal encrypted data', async () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => { })
     const enc6 = enc.enc6[0]
     enc6.encryption = enc6.encryption[0]
     const res = await parseEncryption(enc6, {
       aesSymmetricKey: Buffer.from('symmetric key', 'base64'),
     })
+    expect(consoleWarn).toBeCalledWith('lingo-reader doesn\'t handle font obfuscation and it doesn\'t read the font file.')
     expect(res['EPUB/xhtml/chapter2.xhtml'].length).toBe(2)
+    consoleWarn.mockRestore()
   })
 })
