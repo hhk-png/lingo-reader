@@ -45,16 +45,17 @@ type FileMimeType =
   'image/svg+xml' | 'text/css' | 'application/xml' | 'application/xhtml+xml' |
   'text/html' | 'video/mp4' | 'video/mkv' | 'video/webm' | 'audio/mp3' |
   'audio/wav' | 'audio/ogg' | 'font/ttf' | 'font/otf' | 'font/woff' |
-  'font/woff2' | 'font/eot' | 'unknown'
+  'font/woff2' | 'font/eot' | 'unknown' | 'image/jpg'
 
 type FileExt =
   'jpg' | 'png' | 'gif' | 'bmp' | 'svg' | 'css' | 'xml' | 'xhtml' |
   'html' | 'mp4' | 'mkv' | 'webm' | 'mp3' | 'wav' | 'ogg' | 'ttf' |
-  'otf' | 'woff' | 'woff2' | 'eot' | 'bin'
+  'otf' | 'woff' | 'woff2' | 'eot' | 'bin' | 'jpeg'
 
 export const MimeToExt: Record<FileMimeType, FileExt> = {
   // image
   'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
   'image/png': 'png',
   'image/gif': 'gif',
   'image/bmp': 'bmp',
