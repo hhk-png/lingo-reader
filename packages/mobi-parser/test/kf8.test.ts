@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { type Kf8, initKf8File } from '../src'
 
 describe('kf8 class', () => {
@@ -204,5 +204,24 @@ describe('init kf8 in browser', () => {
 
   it('destroy', () => {
     expect(() => kf8.destroy()).not.toThrowError()
+  })
+})
+
+describe('compatible .azw3 file', () => {
+  beforeAll(() => {
+    // @ts-expect-error globalThis.__BROWSER__
+    globalThis.__BROWSER__ = false
+  })
+
+  it('quanyecha.azw3', async () => {
+    const warnSpyOn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const kf8 = await initKf8File('./example/quanyecha.azw3')
+    const spine = kf8.getSpine()
+    expect(spine.length).toBe(64)
+    expect(warnSpyOn).toHaveBeenCalledWith(
+      'This seems to be a compatible file, which includes .kf8 and .mobi. '
+      + 'We will parse it as a mobi file. And the image files may fail to parse.',
+    )
+    warnSpyOn.mockRestore()
   })
 })

@@ -345,7 +345,7 @@ export class Kf8 implements EBookParser {
         // load resource buffer
         const raw = resourceType === 'flow'
           ? this.loadFlow(Number.parseInt(id))
-          : this.mobiFile.loadResource(Number.parseInt(id) - 1).raw
+          : this.mobiFile.loadResource(Number.parseInt(id, 36) - 1).raw
 
         let blobData: Uint8Array | string = ''
 

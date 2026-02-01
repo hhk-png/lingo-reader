@@ -75,9 +75,10 @@ export class MobiFile {
           // console.warn('Failed to parse kf8 header, fallback to mobi header')
         }
 
-        // console.warn('This seems to be a compatible file, which includes .kf8 and .mobi. '
-        // + 'We will parse it as a mobi file.',
-        // )
+        console.warn(
+          'This seems to be a compatible file, which includes .kf8 and .mobi. '
+          + 'We will parse it as a mobi file. And the image files may fail to parse.',
+        )
       }
     }
 
@@ -94,7 +95,7 @@ export class MobiFile {
   }
 
   loadRecord(index: number): ArrayBuffer {
-    const [start, end] = this.recordsOffset[this.start + index]
+    const [start, end] = this.recordsOffset[this.start + index] ?? [0, 0]
     return this.fileArrayBuffer.slice(start, end)
   }
 
