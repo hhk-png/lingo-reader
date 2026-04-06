@@ -3,12 +3,12 @@
     "target": "ES2022",
     "lib": ["ESNext", "DOM"],
     "useDefineForClassFields": true,
-    "baseUrl": ".",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "paths": {
-      "@lingo-reader/epub-parser/*": ["packages/epub-parser/src/*"],
-      "@lingo-reader/shared/*": ["packages/shared/src/*"]
+      "@lingo-reader/epub-parser/*": ["./packages/epub-parser/src/*"],
+      "@lingo-reader/shared/*": ["./packages/shared/src/*"],
+      "*": ["./*"]
     },
     "resolveJsonModule": true,
     "types": ["node"],

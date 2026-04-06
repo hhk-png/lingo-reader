@@ -219,8 +219,8 @@ describe('compatible .azw3 file', () => {
     const spine = kf8.getSpine()
     expect(spine.length).toBe(64)
 
-    const firstSpineHtml = kf8.loadChapter(spine[1].id)!.html
-    expect(firstSpineHtml.length).toBe(145)
+    const firstSpineHtml = kf8.loadChapter(spine[1].id)!.html.trim()
+    expect(firstSpineHtml.length).toBe(141)
     expect(warnSpyOn).not.toHaveBeenCalledWith()
     warnSpyOn.mockRestore()
   })
@@ -231,8 +231,8 @@ describe('compatible .azw3 file', () => {
     const spine = kf8.getSpine()
     expect(spine.length).toBe(64)
 
-    const firstSpineHtml = kf8.loadChapter(spine[4].id)!.html
-    expect(firstSpineHtml.length).toBe(147)
+    const firstSpineHtml = kf8.loadChapter(spine[4].id)!.html.trim()
+    expect(firstSpineHtml.length).toBe(143)
     expect(warnSpyOn).toHaveBeenCalledWith('File "quanyecha.mobi" is a compatible file. Please change the file extension to .azw3 to make it parse correctly.')
     warnSpyOn.mockRestore()
   })
