@@ -54,7 +54,10 @@ export class MobiFile {
   public removeTrailingEntries!: (array: Uint8Array) => Uint8Array
   public decompress!: DecompressFunc
 
-  constructor(file: ArrayBuffer) {
+  constructor(
+    file: ArrayBuffer,
+    fileName: string,
+  ) {
     this.fileArrayBuffer = file
     // pdbHeader, recordsOffset, recordsMagic
     this.parsePdbHeader()
@@ -67,18 +70,16 @@ export class MobiFile {
       if (boundary < 0xFFFFFFFF) {
         try {
           this.parseFirstRecord(this.loadRecord(boundary))
-          this.resourceStart = this.kf8Header?.resourceStart ?? this.mobiHeader.resourceStart
           this.start = boundary
           this.isKf8 = true
         }
         catch (e) {
-          // console.warn('Failed to parse kf8 header, fallback to mobi header')
+          console.warn('Failed to parse kf8 header.')
         }
 
-        console.warn(
-          'This seems to be a compatible file, which includes .kf8 and .mobi. '
-          + 'We will parse it as a mobi file. And the image files may fail to parse.',
-        )
+        if (fileName.endsWith('.mobi')) {
+          console.warn(`File "${fileName}" is a compatible file. Please change the file extension to .azw3 to make it parse correctly.`)
+        }
       }
     }
 
@@ -94,9 +95,13 @@ export class MobiFile {
     return this.encoder.encode(str)
   }
 
-  loadRecord(index: number): ArrayBuffer {
-    const [start, end] = this.recordsOffset[this.start + index] ?? [0, 0]
+  pdbLoadRecord(index: number): ArrayBuffer {
+    const [start, end] = this.recordsOffset[index] ?? [0, 0]
     return this.fileArrayBuffer.slice(start, end)
+  }
+
+  loadRecord(index: number): ArrayBuffer {
+    return this.pdbLoadRecord(this.start + index)
   }
 
   loadMagic(index: number): string {
@@ -114,7 +119,8 @@ export class MobiFile {
   }
 
   loadResource(index: number): Resource {
-    const buf = this.loadRecord(this.resourceStart + index)
+    // load resource directly from pdb without start offset
+    const buf = this.pdbLoadRecord(this.resourceStart + index)
     const magic = getString(buf.slice(0, 4))
     let data: Uint8Array
     if (magic === 'FONT') {

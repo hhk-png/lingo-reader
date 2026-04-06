@@ -107,7 +107,7 @@ export class Mobi implements EBookParser {
 
   async innerLoadFile() {
     this.fileArrayBuffer = await toArrayBuffer(this.file)
-    this.mobiFile = new MobiFile(this.fileArrayBuffer)
+    this.mobiFile = new MobiFile(this.fileArrayBuffer, this.fileName)
   }
 
   async innerInit() {

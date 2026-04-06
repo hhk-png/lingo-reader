@@ -214,14 +214,26 @@ describe('compatible .azw3 file', () => {
   })
 
   it('quanyecha.azw3', async () => {
-    const warnSpyOn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const warnSpyOn = vi.spyOn(console, 'warn').mockImplementation(() => { })
     const kf8 = await initKf8File('./example/quanyecha.azw3')
     const spine = kf8.getSpine()
     expect(spine.length).toBe(64)
-    expect(warnSpyOn).toHaveBeenCalledWith(
-      'This seems to be a compatible file, which includes .kf8 and .mobi. '
-      + 'We will parse it as a mobi file. And the image files may fail to parse.',
-    )
+
+    const firstSpineHtml = kf8.loadChapter(spine[1].id)!.html
+    expect(firstSpineHtml.length).toBe(145)
+    expect(warnSpyOn).not.toHaveBeenCalledWith()
+    warnSpyOn.mockRestore()
+  })
+
+  it('quanyecha.mobi', async () => {
+    const warnSpyOn = vi.spyOn(console, 'warn').mockImplementation(() => { })
+    const kf8 = await initKf8File('./example/quanyecha.mobi')
+    const spine = kf8.getSpine()
+    expect(spine.length).toBe(64)
+
+    const firstSpineHtml = kf8.loadChapter(spine[4].id)!.html
+    expect(firstSpineHtml.length).toBe(147)
+    expect(warnSpyOn).toHaveBeenCalledWith('File "quanyecha.mobi" is a compatible file. Please change the file extension to .azw3 to make it parse correctly.')
     warnSpyOn.mockRestore()
   })
 })
