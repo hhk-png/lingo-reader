@@ -77,6 +77,7 @@ const modeName = ref<string>(ReaderType.COLUMN)
 const currentConfig = ref<Config[]>([])
 function receiveConfig(configs: Config[]): void {
   currentConfig.value = configs
+  console.log(configs)
 }
 
 /**

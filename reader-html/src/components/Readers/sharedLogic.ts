@@ -114,9 +114,12 @@ export function generatePaddingTopConfig(paddingOneDirection: Ref<number, number
 export function generatePaddingBottomConfig(paddingOneDirection: Ref<number, number>) {
   return generateAdjusterConfig('paddingBottom', Infinity, -Infinity, 2, paddingOneDirection)
 }
-
 export function generateParaSpacingConfig(pSpacing: Ref<number, number>) {
   return generateAdjusterConfig('paraSpacing', Infinity, 0, 1, pSpacing)
+}
+
+export function generateCodeBlockHeightConfig(codeBlockHeight: Ref<number, number>) {
+  return generateAdjusterConfig('codeBlockHeight', 1000, 100, 20, codeBlockHeight)
 }
 
 function findATag(e: MouseEvent): HTMLAnchorElement | undefined {

@@ -22,5 +22,6 @@
   "paddingTop": "上边距",
   "paddingBottom": "下边距",
   "columns": "列数",
-  "columnGap": "列间距"
+  "columnGap": "列间距",
+  "codeBlockHeight": "代码块高度"
 }

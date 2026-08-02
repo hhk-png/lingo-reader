@@ -6,6 +6,7 @@ import { useBookStore } from '../../../store'
 import {
   type Config,
   generateAdjusterConfig,
+  generateCodeBlockHeightConfig,
   generateFontFamilyConfig,
   generateFontSizeConfig,
   generateLetterSpacingConfig,
@@ -17,7 +18,7 @@ import {
   generateParaSpacingConfig,
   handleATagHref,
 } from '../sharedLogic'
-import { useDebounce, useThrottle, withPx, withPxImportant } from '../../../utils'
+import { hasCodeBlock, useDebounce, useThrottle, withPx, withPxImportant } from '../../../utils'
 
 const props = defineProps<{
   selectedTocItem: { id: string, selector: string }
@@ -46,6 +47,7 @@ const paddingLeft = ref<number>(10)
 const paddingRight = ref<number>(10)
 const paddingTop = ref<number>(10)
 const paddingBottom = ref<number>(10)
+const codeBlockHeight = ref<number>(500)
 const lineHeight = ref<number>(2)
 const configList: Config[] = [
   generateFontFamilyConfig(fontFamily),
@@ -59,6 +61,7 @@ const configList: Config[] = [
   generatePaddingBottomConfig(paddingBottom),
   generateLineHeightConfig(lineHeight),
   generateParaSpacingConfig(pSpacing),
+  generateCodeBlockHeightConfig(codeBlockHeight),
 ]
 onMounted(() => {
   emits('receiveConfig', configList)
@@ -186,6 +189,12 @@ async function prevPage() {
 }
 
 const wheelEvent = useThrottle((e: WheelEvent) => {
+  const target = e.target as HTMLElement
+  // prevent scrolling when the mouse is over a code block
+  if (hasCodeBlock(target)) {
+    return
+  }
+
   emits('infoDown')
   if (e.deltaY > 0) {
     nextPage()
@@ -246,6 +255,7 @@ onUnmounted(() => {
         'columnGap': withPx(columnGap),
         'letterSpacing': withPx(letterSpacing),
         '--p-spacing': withPx(pSpacing),
+        '--code-block-height': withPx(codeBlockHeight),
       }" @click="handleATagHrefColumn"
     >
       <div class="article-text" v-html="currentChapterHTML" />
@@ -313,11 +323,12 @@ onUnmounted(() => {
 .article-text :deep(pre) {
   background-color: rgba(204, 201, 194, 0.3);
   overflow: hidden;
+  height: var(--code-block-height, 500px);
+  overflow: auto;
+  padding: 4px;
 }
 
-/* allow text in code to wrap */
 .article-text :deep(code) {
-  white-space: pre-wrap;
   /* Keep whitespace, but allow auto wrap */
   word-wrap: break-word;
   /* Wrap lines at long words (old standard) */

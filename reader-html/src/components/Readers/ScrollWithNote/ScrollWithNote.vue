@@ -7,6 +7,7 @@ import { useDebounce, withPx } from '../../../utils'
 import Resizer from '../../Resizer/Resizer.vue'
 import {
   type Config,
+  generateCodeBlockHeightConfig,
   generateFontFamilyConfig,
   generateFontSizeConfig,
   generateLetterSpacingConfig,
@@ -42,6 +43,7 @@ const textPaddingLeft = ref<number>(5)
 const textPaddingRight = ref<number>(1)
 const textPaddingTop = ref<number>(0)
 const textPaddingBottom = ref<number>(300)
+const codeBlockHeight = ref<number>(500)
 const configList: Config[] = [
   generateFontFamilyConfig(fontFamily),
   generateFontSizeConfig(fontSize),
@@ -52,6 +54,7 @@ const configList: Config[] = [
   generatePaddingRightConfig(textPaddingRight),
   generatePaddingTopConfig(textPaddingTop),
   generatePaddingBottomConfig(textPaddingBottom),
+  generateCodeBlockHeightConfig(codeBlockHeight),
 ]
 onMounted(() => {
   emits('receiveConfig', configList)
@@ -198,6 +201,7 @@ function onMouseDown(e: MouseEvent) {
         'paddingBottom': withPx(textPaddingBottom),
         'flexBasis': withPx(articleBasis),
         '--p-spacing': withPx(pSpacing),
+        '--code-block-height': withPx(codeBlockHeight),
       }" :class="{ 'user-select-none': isDragging }" class="article-wrap"
       @scroll="handleArticleScroll"
     >
@@ -311,6 +315,9 @@ function onMouseDown(e: MouseEvent) {
 
 .article-text :deep(pre) {
   background-color: rgba(204, 201, 194, 0.3);
+  height: var(--code-block-height, 500px);
+  overflow: auto;
+  padding: 4px;
 }
 
 .article-text :deep(p) {

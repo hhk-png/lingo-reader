@@ -7,6 +7,7 @@ import { useDebounce, useDomSize, withPx } from '../../../utils'
 import Resizer from '../../Resizer/Resizer.vue'
 import {
   type Config,
+  generateCodeBlockHeightConfig,
   generateFontFamilyConfig,
   generateFontSizeConfig,
   generateLetterSpacingConfig,
@@ -43,6 +44,7 @@ const textPaddingTop = ref<number>(0)
 const textPaddingBottom = ref<number>(300)
 // Another way to implement dynamic paragraph spacing is to use dynamic injection of <style>
 const pSpacing = ref<number>(5)
+const codeBlockHeight = ref<number>(500)
 const configList: Config[] = [
   generateFontFamilyConfig(fontFamily),
   generateFontSizeConfig(fontSize),
@@ -53,8 +55,10 @@ const configList: Config[] = [
   generatePaddingRightConfig(textPaddingRight),
   generatePaddingTopConfig(textPaddingTop),
   generatePaddingBottomConfig(textPaddingBottom),
+  generateCodeBlockHeightConfig(codeBlockHeight),
 ]
 onMounted(() => {
+  console.log(configList)
   emits('receiveConfig', configList)
 })
 onBeforeUnmount(() => {
@@ -210,6 +214,7 @@ function containerClick(e: MouseEvent) {
         'fontSize': withPx(fontSize),
         'letterSpacing': withPx(letterSpacing),
         '--p-spacing': withPx(pSpacing),
+        '--code-block-height': withPx(codeBlockHeight),
       }" class="article-text" @click="handleATagHrefScroll" v-html="currentChapterHTML"
     />
 
@@ -273,6 +278,9 @@ function containerClick(e: MouseEvent) {
 
 .article-text :deep(pre) {
   background-color: rgba(204, 201, 194, 0.3);
+  height: var(--code-block-height, 500px);
+  overflow: auto;
+  padding: 4px;
 }
 
 .article-text :deep(p) {

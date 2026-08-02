@@ -22,5 +22,6 @@
   "paddingTop": "Padding Top",
   "paddingBottom": "Padding Bottom",
   "columns": "Columns",
-  "columnGap": "Column Gap"
+  "columnGap": "Column Gap",
+  "codeBlockHeight": "Code Block Height"
 }
