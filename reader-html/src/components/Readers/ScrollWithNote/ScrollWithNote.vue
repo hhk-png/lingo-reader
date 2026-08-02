@@ -4,6 +4,7 @@ import type { ResolvedHref } from '@lingo-reader/shared'
 import { useI18n } from 'vue-i18n'
 import { useBookStore } from '../../../store'
 import { useDebounce, withPx } from '../../../utils'
+import { useCodeHighlight } from '../useCodeHighlight'
 import Resizer from '../../Resizer/Resizer.vue'
 import {
   type Config,
@@ -71,6 +72,7 @@ const bookStore = useBookStore()
 const { chapterNums, getChapterHTML, resolveHref } = useBookStore()
 
 const currentChapterHTML = ref<string>()
+useCodeHighlight(articleWrapRef, currentChapterHTML)
 
 onMounted(async () => {
   currentChapterHTML.value = await getChapterHTML()

@@ -4,6 +4,7 @@ import type { ResolvedHref } from '@lingo-reader/shared'
 import { useI18n } from 'vue-i18n'
 import { useBookStore } from '../../../store'
 import { useDebounce, useDomSize, withPx } from '../../../utils'
+import { useCodeHighlight } from '../useCodeHighlight'
 import Resizer from '../../Resizer/Resizer.vue'
 import {
   type Config,
@@ -58,7 +59,6 @@ const configList: Config[] = [
   generateCodeBlockHeightConfig(codeBlockHeight),
 ]
 onMounted(() => {
-  console.log(configList)
   emits('receiveConfig', configList)
 })
 onBeforeUnmount(() => {
@@ -76,6 +76,7 @@ const { width: containerWidth } = useDomSize(containerRef)
 const bookStore = useBookStore()
 const { chapterNums, getChapterHTML, resolveHref } = useBookStore()
 const currentChapterHTML = ref<string>()
+useCodeHighlight(containerRef, currentChapterHTML)
 onMounted(async () => {
   currentChapterHTML.value = await getChapterHTML()
   nextTick(() => {

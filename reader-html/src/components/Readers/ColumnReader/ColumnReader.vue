@@ -17,8 +17,10 @@ import {
   generatePaddingTopConfig,
   generateParaSpacingConfig,
   handleATagHref,
+  hasCodeBlock,
 } from '../sharedLogic'
-import { hasCodeBlock, useDebounce, useThrottle, withPx, withPxImportant } from '../../../utils'
+import { useDebounce, useThrottle, withPx, withPxImportant } from '../../../utils'
+import { useCodeHighlight } from '../useCodeHighlight'
 
 const props = defineProps<{
   selectedTocItem: { id: string, selector: string }
@@ -78,6 +80,7 @@ const currentChapterHTML = ref<string>('')
 
 // template refs
 const articleRef = useTemplateRef<HTMLElement>('articleRef')
+useCodeHighlight(articleRef, currentChapterHTML)
 const delta = ref<number>(0)
 const maxPageIndex = ref<number>(0)
 const index = ref<number>(0)

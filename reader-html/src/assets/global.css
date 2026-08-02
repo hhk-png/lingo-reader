@@ -46,3 +46,29 @@ ul, ol {
 li {
   margin: 0;
 }
+
+/* code block syntax highlighting (generic tokenizer, GitHub-light palette) */
+.tok-comment {
+  color: #6a737d;
+  font-style: italic;
+}
+
+.tok-string {
+  color: #032f62;
+}
+
+.tok-number {
+  color: #005cc5;
+}
+
+.tok-keyword {
+  color: #d73a49;
+}
+
+.tok-function {
+  color: #6f42c1;
+}
+
+.tok-property {
+  color: #0086b3;
+}

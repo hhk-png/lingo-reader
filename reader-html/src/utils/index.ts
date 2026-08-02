@@ -74,13 +74,3 @@ export function useClickOutside(ele: TemplateRef<HTMLElement>, func: () => void)
     document.removeEventListener('click', clickOutside)
   })
 }
-
-export function hasCodeBlock(target: HTMLElement): boolean {
-  if (target.querySelectorAll('pre code').length > 0) {
-    return true
-  }
-  if (target.tagName === 'PRE' && target.querySelector('code') !== null) {
-    return true
-  }
-  return false
-}
