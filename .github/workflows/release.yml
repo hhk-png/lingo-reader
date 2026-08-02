@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: lts/*
           registry-url: https://registry.npmjs.org/
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
       - run: pnpm install
       - run: pnpm run build
       - run: pnpm run test
