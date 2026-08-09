@@ -161,6 +161,7 @@ export function handleATagHref(
 
 export function hasCodeBlock(target: HTMLElement): boolean {
   // `closest` also matches descendants added by syntax highlighting
-  // (e.g. `span.tok-keyword` inside `pre > code`)
-  return target.closest('pre') !== null
+  // (e.g. `span.tok-keyword` inside `pre > code`) and the copy-button
+  // wrapper injected by `useCodeHighlight`
+  return target.closest('pre, .code-block-wrapper') !== null
 }

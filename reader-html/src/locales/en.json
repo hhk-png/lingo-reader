@@ -23,5 +23,7 @@
   "paddingBottom": "Padding Bottom",
   "columns": "Columns",
   "columnGap": "Column Gap",
-  "codeBlockHeight": "Code Block Height"
+  "codeBlockHeight": "Code Block Height",
+  "copy": "Copy",
+  "copied": "Copied"
 }

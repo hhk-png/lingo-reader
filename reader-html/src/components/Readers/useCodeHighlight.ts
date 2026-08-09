@@ -1,5 +1,6 @@
 import { nextTick, watch } from 'vue'
 import type { Ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 type TokenType = 'comment' | 'string' | 'number' | 'keyword' | 'function' | 'property'
 
@@ -85,7 +86,126 @@ function highlightElement(el: HTMLElement) {
 }
 
 /**
- * Highlight every `pre code` block inside `containerRef`.
+ * Copy text to the clipboard, falling back to a hidden textarea for contexts
+ * (e.g. embedded webviews) where the async Clipboard API is unavailable or
+ * permission-restricted.
+ */
+async function copyText(text: string): Promise<boolean> {
+  if (navigator?.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text)
+    return true
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.focus()
+  textarea.select()
+  const ok = document.execCommand('copy')
+  document.body.removeChild(textarea)
+  return ok
+}
+
+/**
+ * The injected wrapper/button are not part of the component templates, so their
+ * styles live in a single global style tag instead of the readers' scoped CSS.
+ * `!important` is needed on inherited props because readers force inheritance
+ * via `.article-text * { font-size: inherit !important; ... }`.
+ */
+let copyButtonStyleInjected = false
+function injectCopyButtonStyle() {
+  if (copyButtonStyleInjected) {
+    return
+  }
+  copyButtonStyleInjected = true
+  const style = document.createElement('style')
+  style.textContent = `
+.code-block-wrapper {
+  position: relative;
+}
+
+.code-copy-button {
+  position: absolute;
+  top: 4px;
+  right: 20px;
+  padding: 2px 8px;
+  color: #333;
+  background-color: rgba(240, 240, 240, 0.9);
+  border: 1px solid #999;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.4;
+}
+
+.code-copy-button:hover,
+.code-copy-button.copied {
+  opacity: 1;
+}
+
+.code-copy-button.copied {
+  background-color: #4caf50;
+  color: #fff;
+  border-color: #4caf50;
+}
+`
+  document.head.appendChild(style)
+}
+
+/**
+ * Wrap a `pre` in a positioned container and append a copy button to its
+ * top-right corner. The wrapper keeps the button in place while the code block
+ * itself scrolls. Copying reads `pre.textContent`, i.e. the raw code rather
+ * than the highlighted markup.
+ */
+function addCopyButton(pre: HTMLElement, t: (key: string) => string) {
+  if (pre.dataset.copyAdded === 'yes') {
+    return
+  }
+  pre.dataset.copyAdded = 'yes'
+
+  // nothing to copy for an empty code block
+  if ((pre.textContent ?? '').trim().length === 0) {
+    return
+  }
+
+  const wrapper = document.createElement('div')
+  wrapper.className = 'code-block-wrapper'
+
+  const button = document.createElement('button')
+  button.type = 'button'
+  button.className = 'code-copy-button'
+  const copyButtonText = t('copy')
+  button.title = copyButtonText
+  button.textContent = copyButtonText
+
+  let resetTimer: ReturnType<typeof setTimeout> | undefined
+  button.addEventListener('click', async (e) => {
+    e.stopPropagation()
+    const copied = await copyText(pre.textContent ?? '')
+    if (!copied) {
+      return
+    }
+    button.textContent = t('copied')
+    button.classList.add('copied')
+    if (resetTimer) {
+      clearTimeout(resetTimer)
+    }
+    resetTimer = setTimeout(() => {
+      button.textContent = t('copy')
+      button.classList.remove('copied')
+    }, 2000)
+  })
+
+  pre.parentNode?.insertBefore(wrapper, pre)
+  wrapper.appendChild(pre)
+  wrapper.appendChild(button)
+}
+
+/**
+ * Highlight every `pre code` block inside `containerRef` and attach a copy
+ * button to each `pre`.
  *
  * Chapters are rendered with `v-html`, so every time the source HTML changes
  * Vue replaces the inner HTML and wipes the previous highlighting. This
@@ -98,12 +218,20 @@ export function useCodeHighlight(
   containerRef: Readonly<Ref<HTMLElement | null | undefined>>,
   sourceRef: Readonly<Ref<string | undefined>>,
 ) {
+  const { t } = useI18n()
   const highlight = () => {
+    injectCopyButtonStyle()
     const root = containerRef.value
     if (!root) {
       return
     }
-    root.querySelectorAll<HTMLElement>('pre code').forEach(highlightElement)
+    root.querySelectorAll<HTMLElement>('pre').forEach((pre) => {
+      const code = pre.querySelector<HTMLElement>('code')
+      if (code) {
+        highlightElement(code)
+        addCopyButton(pre, t)
+      }
+    })
   }
 
   // v-html re-renders on a later flush, so apply on nextTick
