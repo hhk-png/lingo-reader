@@ -96,7 +96,10 @@ async function skipToChapter(newV: ResolvedHref) {
   }
   if (newV.selector.length > 0) {
     nextTick(() => {
-      articleWrapRef.value!.querySelector(newV.selector)!.scrollIntoView()
+      const targetEle = articleWrapRef.value!.querySelector(newV.selector)
+      if (targetEle) {
+        targetEle.scrollIntoView()
+      }
     })
   }
 }

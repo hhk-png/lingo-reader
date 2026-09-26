@@ -1,64 +1,109 @@
 import { nextTick, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { glowInner, glowSource } from 'glowglow'
 
-type TokenType = 'comment' | 'string' | 'number' | 'keyword' | 'function' | 'property'
+/** Depth-first, document-order walk over every descendant of `root`. */
+function walkNodes(root: Node, visit: (node: Node) => void): void {
+  for (const child of Array.from(root.childNodes)) {
+    visit(child)
+    walkNodes(child, visit)
+  }
+}
+
+interface Anchor {
+  offset: number
+  node: Element
+}
 
 /**
- * Generic syntax highlighter with no language detection.
- *
- * A single regex pass matches the lexical shapes that are common to most
- * programming languages, so any `pre > code` block gets readable coloring
- * without knowing what language it is. Order in the alternation matters:
- * comments and strings are greedier, keywords win over function names so
- * `if (` is colored as a keyword rather than a call.
+ * Read the code text and collect its `id`-carrying elements (page-break
+ * markers), so navigation targets survive highlighting. Markers come from the
+ * DOM, not the HTML string — the parser has already resolved entity escaping,
+ * so a `<span>` meant to be shown as code is just a text node.
+ * `glowSource()` owns the text transform and maps block offsets into it.
  */
-const TOKEN_PATTERN = new RegExp([
-  // comments
-  /(?<comment>\/\*[\s\S]*?\*\/|<!--[\s\S]*?-->|\/\/[^\n]*|(?:^|(?<=\s))#(?![0-9a-f]{3,6}\b)[^\n]*)/i,
-  // strings (double, single, template literal, python triple-quoted)
-  /(?<string>"""(?:[^"\\]|\\.)*"""|'''(?:[^'\\]|\\.)*'''|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)/,
-  // numbers (hex, binary, octal, decimal with exponent)
-  /(?<number>\b0x[0-9a-f]+\b|\b0b[01]+\b|\b0o[0-7]+\b|\b\d+(?:\.\d+)?(?:e[+-]?\d+)?\b)/i,
-  // keywords (checked before function names)
-  /(?<keyword>\b(?:if|else|elif|for|while|do|switch|case|default|break|continue|return|function|def|class|interface|struct|enum|import|from|export|require|const|let|var|new|this|super|self|null|undefined|true|false|True|False|None|nil|try|catch|finally|throw|async|await|yield|static|private|public|protected|delete|in|of|instanceof|typeof|void|with|as|lambda|and|or|not|is|pass|print|printf)\b)/,
-  // function calls: identifier followed by `(`
-  /(?<function>\b[A-Z_$][\w$]*)(?=\s*\()/i,
-  // property access: `.name`
-  /(?<property>\.\s*[A-Z_$][\w$]*)/i,
-].map(regex => regex.source).join('|'), 'g')
+function collectAnchors(codeEl: HTMLElement): { text: string, anchors: Anchor[] } {
+  const { text, offset } = glowSource(codeEl.textContent ?? '')
+  const candidates = new Set<Element>(codeEl.querySelectorAll('[id]'))
+  if (candidates.size === 0) {
+    return { text, anchors: [] }
+  }
 
-function escapeHTML(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
-
-function highlightCode(code: string): string {
-  return code.replace(TOKEN_PATTERN, (match, ...rest) => {
-    const groups = rest[rest.length - 1] as Record<string, string | undefined>
-    const type: TokenType = groups.comment
-      ? 'comment'
-      : groups.string
-        ? 'string'
-        : groups.number
-          ? 'number'
-          : groups.keyword
-            ? 'keyword'
-            : groups.function
-              ? 'function'
-              : 'property'
-    return `<span class="tok-${type}">${escapeHTML(match)}</span>`
+  const anchors: Anchor[] = []
+  let rawLength = 0
+  walkNodes(codeEl, (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      rawLength += (node as Text).data.length
+    }
+    else if (candidates.has(node as Element)) {
+      anchors.push({ offset: offset(rawLength), node: node as Element })
+    }
   })
+  return { text, anchors }
 }
 
-// Cache of highlighted HTML keyed by raw code text. Re-rendering the same code
-// (chapter switches, reader switches, back-and-forth navigation) creates fresh
-// DOM, so the `data-highlighted` guard can't help there; this cache avoids
-// re-tokenizing identical code. Shared across all reader instances.
+/** The text node holding `offset`, and how far into it that is. */
+function findTextPosition(root: Node, offset: number): { node: Text, local: number } | undefined {
+  let accumulated = 0
+  let found: { node: Text, local: number } | undefined
+  walkNodes(root, (node) => {
+    if (found || node.nodeType !== Node.TEXT_NODE) {
+      return
+    }
+    const text = node as Text
+    if (offset <= accumulated + text.data.length) {
+      found = { node: text, local: offset - accumulated }
+      return
+    }
+    accumulated += text.data.length
+  })
+  return found
+}
+
+/**
+ * Put the anchors back at their original character offsets. Most sit inside a
+ * token (`// Ac|cess 3rd item`), hence the text-node split. Two markers sharing
+ * an offset would re-locate to just before the one already inserted, so the
+ * second is chained after the first.
+ */
+function insertAnchors(codeEl: HTMLElement, anchors: Anchor[]): void {
+  let previous: Anchor | undefined
+
+  for (const anchor of anchors) {
+    if (previous && anchor.offset === previous.offset) {
+      previous.node.parentNode?.insertBefore(anchor.node, previous.node.nextSibling)
+      previous = anchor
+      continue
+    }
+
+    const position = findTextPosition(codeEl, anchor.offset)
+    if (!position) {
+      console.warn(`Could not restore anchor #${anchor.node.id}: offset ${anchor.offset} is out of range.`)
+      continue
+    }
+
+    const { node, local } = position
+    const parent = node.parentNode
+    if (!parent) {
+      continue
+    }
+    if (local <= 0) {
+      parent.insertBefore(anchor.node, node)
+    }
+    else if (local >= node.data.length) {
+      parent.insertBefore(anchor.node, node.nextSibling)
+    }
+    else {
+      parent.insertBefore(anchor.node, node.splitText(local))
+    }
+    previous = anchor
+  }
+}
+
+// Highlighted HTML keyed by raw code text. `v-html` re-rendering makes the
+// `data-highlighted` guard useless across chapters, but this cache still covers
+// re-visits. Anchors are re-inserted after parsing, so they don't affect keys.
 const highlightCache = new Map<string, string>()
 const CACHE_MAX_SIZE = 500
 
@@ -66,29 +111,34 @@ function highlightElement(el: HTMLElement) {
   if (el.dataset.highlighted === 'yes') {
     return
   }
-  const code = el.textContent ?? ''
-  if (code.length === 0) {
+  const raw = el.textContent ?? ''
+  if (raw.length === 0) {
     return
   }
 
-  let html = highlightCache.get(code)
-  if (!html) {
-    html = highlightCode(code)
-    highlightCache.set(code, html)
-    // keep the cache bounded by evicting the oldest entry
+  const { text, anchors } = collectAnchors(el)
+  if (text.length === 0) {
+    return
+  }
+
+  let html = highlightCache.get(raw)
+  if (html === undefined) {
+    // `glowInner()` returns only the markup, so `el` keeps its own attributes
+    html = glowInner(text)
+    highlightCache.set(raw, html)
     if (highlightCache.size > CACHE_MAX_SIZE) {
       highlightCache.delete(highlightCache.keys().next().value!)
     }
   }
 
   el.innerHTML = html
+  insertAnchors(el, anchors)
   el.dataset.highlighted = 'yes'
 }
 
 /**
- * Copy text to the clipboard, falling back to a hidden textarea for contexts
- * (e.g. embedded webviews) where the async Clipboard API is unavailable or
- * permission-restricted.
+ * Copy to the clipboard, falling back to a hidden textarea where the async
+ * Clipboard API is unavailable or permission-restricted.
  */
 async function copyText(text: string): Promise<boolean> {
   if (navigator?.clipboard?.writeText) {
@@ -109,10 +159,8 @@ async function copyText(text: string): Promise<boolean> {
 }
 
 /**
- * The injected wrapper/button are not part of the component templates, so their
- * styles live in a single global style tag instead of the readers' scoped CSS.
- * `!important` is needed on inherited props because readers force inheritance
- * via `.article-text * { font-size: inherit !important; ... }`.
+ * The wrapper/button aren't in the component templates, so their styles live in
+ * one global style tag rather than the readers' scoped CSS.
  */
 let copyButtonStyleInjected = false
 function injectCopyButtonStyle() {
@@ -154,10 +202,9 @@ function injectCopyButtonStyle() {
 }
 
 /**
- * Wrap a `pre` in a positioned container and append a copy button to its
- * top-right corner. The wrapper keeps the button in place while the code block
- * itself scrolls. Copying reads `pre.textContent`, i.e. the raw code rather
- * than the highlighted markup.
+ * Wrap a `pre` in a positioned container and add a copy button to its corner;
+ * the wrapper keeps the button put while the code scrolls. Copies
+ * `pre.textContent` — the raw code, not the highlighted markup.
  */
 function addCopyButton(pre: HTMLElement, t: (key: string) => string) {
   if (pre.dataset.copyAdded === 'yes') {
@@ -165,7 +212,6 @@ function addCopyButton(pre: HTMLElement, t: (key: string) => string) {
   }
   pre.dataset.copyAdded = 'yes'
 
-  // nothing to copy for an empty code block
   if ((pre.textContent ?? '').trim().length === 0) {
     return
   }
@@ -204,15 +250,9 @@ function addCopyButton(pre: HTMLElement, t: (key: string) => string) {
 }
 
 /**
- * Highlight every `pre code` block inside `containerRef` and attach a copy
- * button to each `pre`.
- *
- * Chapters are rendered with `v-html`, so every time the source HTML changes
- * Vue replaces the inner HTML and wipes the previous highlighting. This
- * composable re-applies highlighting after each change (and on mount).
- *
- * @param containerRef element that contains the rendered chapter HTML
- * @param sourceRef    the chapter HTML string bound to `v-html`
+ * Highlight every `pre code` in `containerRef` with glowglow and add a copy
+ * button to each `pre`. Chapters render through `v-html`, so each source change
+ * wipes the highlighting and it has to be reapplied on mount and on every swap.
  */
 export function useCodeHighlight(
   containerRef: Readonly<Ref<HTMLElement | null | undefined>>,
