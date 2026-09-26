@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref, useTemplateRef } from 'vue'
+import { computed, defineAsyncComponent, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBookStore } from '../../store'
@@ -82,7 +82,23 @@ function receiveConfig(configs: Config[]): void {
 /**
  * book toc
  */
-const toc = flatToc(bookStore.getToc()!)
+const spineIds = bookStore.getSpineIds()
+const toc = flatToc(bookStore.getToc()!).map(item => ({
+  ...item,
+  chapterIndex: spineIds.indexOf(bookStore.resolveHref(item.href)?.id ?? ''),
+}))
+const activeTocHref = computed(() => {
+  const current = bookStore.chapterIndex
+  const indexed = toc.filter(item => item.chapterIndex >= 0)
+  // a chapter can carry several entries; the first is the chapter-level one
+  const exact = indexed.find(item => item.chapterIndex === current)
+  if (exact) {
+    return exact.href
+  }
+  // unlisted pages (covers, interstitials) keep the entry they follow; before
+  // the first entry nothing precedes, so fall forward to it
+  return (indexed.filter(item => item.chapterIndex < current).pop() ?? indexed[0])?.href
+})
 // toc show or hide
 const showToc = ref<boolean>(false)
 function showTocToggle() {
@@ -91,6 +107,15 @@ function showTocToggle() {
 const tocUiContent = useTemplateRef<HTMLElement>('tocUiContent')
 useClickOutside(tocUiContent, () => {
   showToc.value = false
+})
+const tocListRef = useTemplateRef<HTMLElement>('tocListRef')
+watch(showToc, (open) => {
+  if (!open) {
+    return
+  }
+  nextTick(() => {
+    tocListRef.value?.querySelector('.active')?.scrollIntoView({ block: 'center' })
+  })
 })
 // click toc item
 const selectedTocItem = ref<{ id: string, selector: string }>({ id: '', selector: '' })
@@ -136,10 +161,11 @@ function tocItemClick(item: FlatedTocItem) {
         <img src="/toc.svg" alt="toc">
         <span>{{ t('tableOfContent') }}</span>
       </div>
-      <div :class="{ 'hide-toc': !showToc }" class="toc" @wheel.stop.passive>
+      <div ref="tocListRef" :class="{ 'hide-toc': !showToc }" class="toc" @wheel.stop.passive>
         <ul>
           <li
-            v-for="item in toc" :key="item.href" :style="{ paddingLeft: withPx(20 + item.level * 20) }"
+            v-for="item in toc" :key="item.href" :class="{ active: item.href === activeTocHref }"
+            :style="{ paddingLeft: withPx(20 + item.level * 20) }"
             @click="tocItemClick(item)"
           >
             <span>{{ item.label }}</span>
@@ -260,7 +286,7 @@ function tocItemClick(item: FlatedTocItem) {
   width: 400px;
   height: calc(100% - 80px);
   background-color: #f0f0f0;
-  overflow-y: scroll;
+  overflow-y: auto;
   transition: right 0.1s;
 }
 
@@ -280,5 +306,10 @@ function tocItemClick(item: FlatedTocItem) {
 
 .toc li:hover {
   background-color: #e5e5e5;
+}
+
+.toc li.active {
+  background-color: #d0d0d0;
+  font-weight: 600;
 }
 </style>

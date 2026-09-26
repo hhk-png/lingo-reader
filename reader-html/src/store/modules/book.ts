@@ -76,6 +76,10 @@ const useBookStore = defineStore('ebook', () => {
     return await getChapterHTMLFromId(id)
   }
 
+  const getSpineIds = (): string[] => {
+    return spine.map(item => item.id)
+  }
+
   const getToc = (): Toc => {
     const toc = book!.getToc()
     for (const item of toc) {
@@ -120,6 +124,7 @@ const useBookStore = defineStore('ebook', () => {
     initBook,
     getChapterHTML,
     getChapterThroughId,
+    getSpineIds,
     getToc,
     getFileName,
     reset,
