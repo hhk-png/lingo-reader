@@ -117,6 +117,13 @@ watch(showToc, (open) => {
     tocListRef.value?.querySelector('.active')?.scrollIntoView({ block: 'center' })
   })
 })
+// paging hides the info bar; the toc is fixed and would otherwise stay on
+// screen, so collapse it too rather than leave it floating on its own
+watch(isInfoDown, (down) => {
+  if (!down) {
+    showToc.value = false
+  }
+})
 // click toc item
 const selectedTocItem = ref<{ id: string, selector: string }>({ id: '', selector: '' })
 function tocItemClick(item: FlatedTocItem) {
