@@ -47,8 +47,8 @@ li {
   margin: 0;
 }
 
-/* Token colours come from `glowglow/css/*` (imported in main.ts); below are only
-   the overrides needed to reconcile it with normalize.css. */
+/* Token colours come from `@glowglow/core/css/*` (imported in main.ts); below
+   are only the overrides needed to reconcile it with normalize.css. */
 
 /* glowglow neutralises sup's vertical-align, but normalize.css's
    `sup { position: relative; top: -0.5em }` still lifts comment tokens. */

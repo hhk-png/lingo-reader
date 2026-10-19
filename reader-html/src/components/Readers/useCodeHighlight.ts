@@ -1,7 +1,7 @@
 import { nextTick, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { glowInner, glowSource } from 'glowglow'
+import { glowInner, glowSource } from '@glowglow/core'
 
 /** Depth-first, document-order walk over every descendant of `root`. */
 function walkNodes(root: Node, visit: (node: Node) => void): void {

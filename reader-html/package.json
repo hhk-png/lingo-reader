@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@glowglow/core": "^0.3.1",
     "@lingo-reader/epub-parser": "workspace:^",
     "@lingo-reader/fb2-parser": "workspace:^",
     "@lingo-reader/mobi-parser": "workspace:^",
     "@lingo-reader/shared": "workspace:^",
     "dompurify": "^3.2.3",
-    "glowglow": "^0.2.0",
     "pinia": "^2.2.6",
     "vue": "^3.5.12",
     "vue-i18n": "10",
