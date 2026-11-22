@@ -50,7 +50,7 @@ jobs:
         run: pnpm run build
 
       - name: Typecheck
-        run: tsc --noEmit
+        run: pnpm run tsc
 
   test:
     runs-on: ${{ matrix.os }}
