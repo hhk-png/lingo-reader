@@ -94,7 +94,7 @@ function dtsConfig(input, output) {
 export default [
   // reader.ts
   commonjsAndEsmConfig('./src/index.ts', {
-    cjs: './dist/index.js',
+    cjs: './dist/index.cjs',
     esm: './dist/index.mjs',
   }),
   browserConfig('./src/index.ts', './dist/index.browser.mjs'),

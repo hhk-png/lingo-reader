@@ -103,11 +103,11 @@ function dtsConfig(input, output) {
 export default [
   // reader.ts
   nodeConfig('./src/index.ts', {
-    cjs: './dist/index.node.js',
+    cjs: './dist/index.node.cjs',
     esm: './dist/index.node.mjs',
   }),
   browserConfig('./src/index.ts', {
-    cjs: './dist/index.browser.js',
+    cjs: './dist/index.browser.cjs',
     mjs: './dist/index.browser.mjs',
   }),
   dtsConfig('./src/index.ts', './dist/index.d.ts'),

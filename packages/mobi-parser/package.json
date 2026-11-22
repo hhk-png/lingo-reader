@@ -23,18 +23,18 @@
       "types": "./dist/index.d.ts",
       "node": {
         "import": "./dist/index.node.mjs",
-        "require": "./dist/index.node.js",
-        "default": "./dist/index.node.js"
+        "require": "./dist/index.node.cjs",
+        "default": "./dist/index.node.cjs"
       },
       "browser": {
         "import": "./dist/index.browser.mjs",
-        "require": "./dist/index.browser.js",
+        "require": "./dist/index.browser.cjs",
         "default": "./dist/index.browser.mjs"
       }
     }
   },
-  "main": "./src/index.node.js",
-  "module": "./src/index.node.mjs",
+  "main": "./dist/index.node.cjs",
+  "module": "./dist/index.node.mjs",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
